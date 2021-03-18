@@ -107,3 +107,4 @@ def draw(win, grid, rows, width):
     for row in grid:
         for spot in row:
             spot.draw(win)
+            

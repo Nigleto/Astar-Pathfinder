@@ -24,11 +24,10 @@ class Spot:
         self.col = col
         self.x = row * width
         self.y = col * width
-        self.width = width
-        self.total_rows = total_rows
         self.color = WHITE
         self.neighbors = []
         self.width = width
+        self.total_rows = total_rows
 
     def get_pos(self):
         return self.row, self.col
@@ -38,9 +37,6 @@ class Spot:
 
     def is_open(self):
         return self.color == GREEN
-
-    def make_start(self):
-        self.color = ORANGE
 
     def is_barrier(self):
         return self.color == BLACK
@@ -53,6 +49,9 @@ class Spot:
 
     def reset(self):
         self.color = WHITE
+
+    def make_start(self):
+        self.color = ORANGE
 
     def make_closed(self):
         self.color = RED
@@ -78,9 +77,9 @@ class Spot:
             self.neighbors.append(grid[self.row + 1][self.col])
         if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
             self.neighbors.append(grid[self.row - 1][self.col])
-        if self.col < self.total_rows - 1 and not grid[self.row - 1][self.col + 1].is_barrier():  # LEFT
-            self.neighbors.append(grid[self.row][self.col + 1])
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # RIGHT
+        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
+            self.neighbors.append(grid[self.row][self.col - 1])
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier(): # RIGHT
             self.neighbors.append(grid[self.row][self.col - 1])
 
     def __lt__(self, other):
@@ -92,10 +91,11 @@ def h(p1, p2):
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
-        current.make_end()
+        current.make_path()
         draw()
 
 
@@ -198,14 +198,11 @@ def main(win, width):
             if event.type == pygame.QUIT:
                 run = False
 
-            if started:
-                continue
-
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
                 spot = grid[row][col]
-                if not start:
+                if not start and spot != end:
                     start = spot
                     start.make_start()
 

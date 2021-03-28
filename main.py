@@ -92,10 +92,10 @@ def h(p1, p2):
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
-def reconstruct_path(came_from, end, draw):
+def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
-        end.make_end()
+        current.make_end()
         draw()
 
 
@@ -222,16 +222,21 @@ def main(win, width):
                 spot = grid[row][col]
                 spot.reset()
                 if spot == start:
-                    start == None
+                    start = None
                 elif spot == end:
                     end = None
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started:
+                if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+
+                if event.key == pygame.K_c:
+                    start = None
+                    end = None
+                    grid = make_grid(ROWS, width)
 
     pygame.quit()
 

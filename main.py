@@ -73,13 +73,16 @@ class Spot:
 
     def update_neighbors(self, grid):
         self.neighbors = []
-        if self.row < self.total_rows - 1 and not grid[self.row - 1][self.col].is_barrier():  # DOWN
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():  # DOWN
             self.neighbors.append(grid[self.row + 1][self.col])
+
         if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
             self.neighbors.append(grid[self.row - 1][self.col])
+
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():  # RIGHT
+            self.neighbors.append(grid[self.row][self.col + 1])
+
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
-            self.neighbors.append(grid[self.row][self.col - 1])
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier(): # RIGHT
             self.neighbors.append(grid[self.row][self.col - 1])
 
     def __lt__(self, other):
@@ -107,7 +110,7 @@ def algorithm(draw, grid, start, end):
     g_score = {spot: float("inf") for row in grid for spot in row}
     g_score[start] = 0
     f_score = {spot: float("inf") for row in grid for spot in row}
-    f_score[start] = h(start.get_pos(), end.get_pos())
+    f_score[start] = h(start.get_pos(), end.get_pos()) #+ 1
 
     open_set_hash = {start}
 
@@ -121,6 +124,7 @@ def algorithm(draw, grid, start, end):
 
         if current == end:
             reconstruct_path(came_from, end, draw)
+            end.make_end()
             return True
 
         for neighbor in current.neighbors:
@@ -129,7 +133,7 @@ def algorithm(draw, grid, start, end):
             if temp_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos)
+                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
                 if neighbor not in open_set_hash:
                     count += 1
                     open_set.put((f_score[neighbor], count, neighbor))
@@ -152,6 +156,7 @@ def make_grid(rows, width):
         for j in range(rows):
             spot = Spot(i, j, gap, rows)
             grid[i].append(spot)
+
     return grid
 
 
@@ -164,14 +169,14 @@ def draw_grid(win, rows, width):
 
 
 def draw(win, grid, rows, width):
-    win.fill(WHITE)
+	win.fill(WHITE)
 
-    for row in grid:
-        for spot in row:
-            spot.draw(win)
+	for row in grid:
+		for spot in row:
+			spot.draw(win)
 
-    draw_grid(win, rows, width)
-    pygame.display.update()
+	draw_grid(win, rows, width)
+	pygame.display.update()
 
 
 def get_clicked_pos(pos, rows, width):
@@ -191,7 +196,6 @@ def main(win, width):
     end = None
 
     run = True
-    started = False
     while run:
         draw(win, grid, ROWS, width)
         for event in pygame.event.get():
@@ -228,6 +232,7 @@ def main(win, width):
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
+
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
                 if event.key == pygame.K_c:
@@ -236,6 +241,6 @@ def main(win, width):
                     grid = make_grid(ROWS, width)
 
     pygame.quit()
- 
+
 
 main(WIN, WIDTH)
